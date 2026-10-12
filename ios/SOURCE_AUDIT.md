@@ -23,6 +23,10 @@ This is a source-level inventory, not a successful build report. The repository 
 4. Add an Xcode app target only after a minimal source set and its required dependencies have been identified.
 5. Keep the unsigned IPA workflow, but treat its artifact as a packaging/build result, not proof that the game is playable. An unsigned IPA is not ready for ordinary installation on an iPhone without a signing/sideloading path.
 
+## Repeatable audit
+
+Run `python3 ios/tools/audit_sources.py` from the repository root. The script parses the two Visual Studio project files, records configured platforms and C++ source/header counts, flags platform-specific names in the project lists and platform precompiled headers, and writes `ios/source-inventory.json`. CI writes the generated inventory under `build/ios/source-inventory.json` and uploads it as the `LegacyMobile-source-inventory` artifact. This is an inventory only; it does not compile the game.
+
 ## Next source-level milestone
 
-Trace the client startup path into the game loop, world creation, and rendering, then map every dependency reached by that path. Use that dependency map to select a small, real C++ source set for the first Xcode target. The first workflow run is expected to stop at the Xcode-project discovery step until an actual iOS project and shared scheme are committed; that failure is intentional and prevents a false IPA artifact.
+Trace the client startup path into the game loop, world creation, and rendering, then map every dependency reached by that path. Use that dependency map to select a small, real C++ source set for the first Xcode target. The IPA job is expected to stop at Xcode-project discovery until an actual iOS project and shared scheme are committed; the separate source-audit job can still succeed and provide the inventory artifact.
