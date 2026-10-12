@@ -125,6 +125,18 @@ jobs:
       - name: Run Metal clip-space conversion tests
         run: ./build/ios/metal-clip-space-tests
 
+      - name: Compile portable legacy Vec3 source with iOS platform preamble
+        run: |
+          set -euo pipefail
+          c++ -std=c++17 -Wall -Wextra -pedantic -DIOS_PORT \
+            -IMinecraft.World -ffunction-sections -fdata-sections \
+            Minecraft.World/Vec3.cpp \
+            ios/platform/tests/Vec3PortabilityTests.cpp \
+            -Wl,--gc-sections -o build/ios/vec3-portability-tests
+
+      - name: Run portable legacy Vec3 tests
+        run: ./build/ios/vec3-portability-tests
+
   build-unsigned-ipa:
     name: Build unsigned IPA
     runs-on: macos-15
