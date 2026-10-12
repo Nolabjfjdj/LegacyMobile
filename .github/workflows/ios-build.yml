@@ -90,6 +90,17 @@ jobs:
       - name: Run mobile input tests
         run: ./build/ios/mobile-input-tests
 
+      - name: Compile portable renderer matrix tests
+        run: |
+          set -euo pipefail
+          c++ -std=c++17 -Wall -Wextra -Werror -pedantic \
+            ios/renderer/MatrixStacks.cpp \
+            ios/renderer/tests/MatrixStacksTests.cpp \
+            -o build/ios/renderer-matrix-tests
+
+      - name: Run portable renderer matrix tests
+        run: ./build/ios/renderer-matrix-tests
+
   build-unsigned-ipa:
     name: Build unsigned IPA
     runs-on: macos-15
