@@ -101,6 +101,18 @@ jobs:
       - name: Run portable renderer matrix tests
         run: ./build/ios/renderer-matrix-tests
 
+      - name: Compile legacy matrix adapter tests
+        run: |
+          set -euo pipefail
+          c++ -std=c++17 -Wall -Wextra -Werror -pedantic \
+            ios/renderer/MatrixStacks.cpp \
+            ios/renderer/LegacyMatrixAdapter.cpp \
+            ios/renderer/tests/LegacyMatrixAdapterTests.cpp \
+            -o build/ios/legacy-matrix-adapter-tests
+
+      - name: Run legacy matrix adapter tests
+        run: ./build/ios/legacy-matrix-adapter-tests
+
   build-unsigned-ipa:
     name: Build unsigned IPA
     runs-on: macos-15
