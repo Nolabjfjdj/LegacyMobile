@@ -22,6 +22,12 @@ The older monolithic `Minecraft::run()` implementation is disabled in the curren
 
 `Minecraft.Client/Input.cpp` reads movement through `InputManager.GetJoypadStick_LX/LY` and controller button state. A UIKit touch adapter should feed the existing gameplay action boundary without introducing UIKit dependencies into the world/gameplay code.
 
+## Mobile input foundation
+
+A platform-neutral input state now exists at `ios/input/MobileInputState.h/.cpp`. It separates touch and controller state, clamps invalid/out-of-range axes, consumes touch camera deltas once per frame, clears stale states when a controller connects/disconnects, and makes the controller source authoritative while connected. Unit tests compile it independently with C++17 in the `mobile-input-tests` CI job.
+
+This is intentionally not yet wired into the game. The native iOS host still needs a UIKit touch overlay and a GameController adapter, then a mapping from this snapshot to the existing `InputManager` / `MINECRAFT_ACTION_*` API. The Xcode project and renderer remain blockers to an actual playable iOS build.
+
 ## Next dependency-tracing tasks
 
 1. Find the platform caller for `run_middle()` and `run_end()` and document the call order.
