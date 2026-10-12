@@ -46,3 +46,25 @@ This document records the source inspection and defines a staged route toward mo
 - Playable mobile build: not yet available.
 
 Do not treat a successful placeholder workflow or an empty package as a successful game port.
+
+## Dependency audit (12 October 2026)
+
+A second pass through the repository's tracked file tree confirms that the render/input libraries are platform-specific binary artifacts:
+
+- Windows: `Minecraft.Client/Windows64/4JLibs/libs/4J_Render.lib`, `4J_Render_PC.lib`, and the matching `4J_Input*.lib` files.
+- PlayStation 3 and PS Vita: platform-specific `4J_Render.a` and `4J_Input.a` archives under their respective `4JLibs/libs` directories.
+- Xbox/Durango: platform-specific `4J_Render.lib` and `4J_Input*.lib` archives.
+- The public `C4JRender` interface exposes Direct3D 11 types such as `ID3D11Device`, `IDXGISwapChain`, `ID3D11Buffer`, and `D3D11_RECT`. The GL-style wrapper forwards calls to that interface; it is not an independent OpenGL renderer.
+
+These archives cannot be linked into an Android NDK or iOS build as-is: they were built for different platforms/toolchains and the render interface itself exposes platform-specific types. The next implementation milestone must therefore be a deliberate portability boundary, not merely adding Gradle/Xcode metadata.
+
+## Next implementation milestone
+
+Before creating a mobile application target:
+
+1. Inventory the source files and linker inputs selected by the existing Visual Studio configurations.
+2. Separate portable world/game logic from Windows/console application, graphics, audio, storage, and input services.
+3. Define a platform-neutral render interface that does not expose D3D11 types, then implement a mobile backend against a supported mobile graphics API.
+4. Add a native app shell and a minimal compile test for the shared portable core. Keep the first test separate from the full game so failures are attributable and the result cannot be mistaken for a playable build.
+
+The repository is not ready for a truthful full-game APK/IPA workflow until these dependencies have source-compatible mobile replacements. No build workflow is added in this step because it would fail to produce a playable game.
