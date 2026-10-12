@@ -35,15 +35,20 @@ def main():
                 in_class = False
 
     definitions = {}
+    platform_definitions = {}
     source_files = []
+    platform_source_files = []
     for path in CLIENT.rglob("*"):
         if not path.is_file() or path.suffix.lower() not in {".cpp", ".cc", ".c", ".mm"}:
             continue
-        if any(part in EXCLUDED_PARTS for part in path.relative_to(CLIENT).parts):
-            continue
-        source_files.append(path)
+        is_platform_specific = any(part in EXCLUDED_PARTS for part in path.relative_to(CLIENT).parts)
+        target = platform_definitions if is_platform_specific else definitions
+        if is_platform_specific:
+            platform_source_files.append(path)
+        else:
+            source_files.append(path)
         for name in DEFINITION_RE.findall(read_text(path)):
-            definitions.setdefault(name, []).append(path.relative_to(ROOT).as_posix())
+            target.setdefault(name, []).append(path.relative_to(ROOT).as_posix())
 
     libs = sorted(
         path.relative_to(ROOT).as_posix()
@@ -51,16 +56,22 @@ def main():
         if path.is_file() and path.suffix.lower() in {".lib", ".a", ".dylib", ".framework"}
     )
     implemented = sorted(declarations & definitions.keys())
+    platform_implemented = sorted(declarations & platform_definitions.keys())
     missing = sorted(declarations - definitions.keys())
     report = {
         "report_type": "renderer_implementation_surface_audit_not_build_validation",
         "renderer_header": HEADER.relative_to(ROOT).as_posix(),
         "declared_method_count": len(declarations),
         "source_files_scanned": len(source_files),
-        "methods_with_visible_source_definitions": len(implemented),
+        "platform_specific_source_files_scanned": len(platform_source_files),
+        "methods_with_portable_source_definitions": len(implemented),
+        "methods_with_platform_specific_source_definitions": len(platform_implemented),
         "methods_without_visible_source_definitions": len(missing),
-        "visible_source_definitions": {
+        "portable_source_definitions": {
             name: sorted(definitions[name]) for name in implemented
+        },
+        "platform_specific_source_definitions": {
+            name: sorted(platform_definitions[name]) for name in platform_implemented
         },
         "methods_without_visible_source_definitions_list": missing,
         "prebuilt_renderer_or_platform_libraries": libs,
@@ -75,7 +86,8 @@ def main():
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(f"Renderer methods declared: {len(declarations)}")
-    print(f"Methods with visible source definitions: {len(implemented)}")
+    print(f"Methods with portable source definitions: {len(implemented)}")
+    print(f"Methods with platform-specific source definitions: {len(platform_implemented)}")
     print(f"Methods without visible source definitions: {len(missing)}")
     print(f"Prebuilt/platform libraries found: {len(libs)}")
     print(f"Report written to: {output}")
