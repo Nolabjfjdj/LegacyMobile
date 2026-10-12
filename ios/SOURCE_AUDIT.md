@@ -4,7 +4,7 @@ This is a source-level inventory, not a successful build report. The repository 
 
 ## Findings from the current repository
 
-- `Minecraft.World/Minecraft.World.vcxproj` lists 715 C++ translation units and 846 headers.
+- `Minecraft.Client/Minecraft.Client.vcxproj` lists 668 C++ translation units and 911 headers; `Minecraft.World/Minecraft.World.vcxproj` lists 715 C++ translation units and 846 headers. These counts were confirmed by the CI source-inventory run.
 - Its project configurations target ARM64EC, Durango, ORBIS, PS3, PSVita, Win32, x64, and Xbox 360. There is no iOS configuration.
 - The project contains console-specific save implementations such as `ConsoleSaveFileInputStream.cpp`, `ConsoleSaveFileOutputStream.cpp`, and other `ConsoleSaveFile*.cpp` files. These must not be added blindly to an iOS target.
 - Platform macros in the project include `_XBOX`, `__PS3__`, `__PSVITA__`, `WIN32`, and `_DURANGO`. Source selection and platform abstractions must be reviewed before compiling on Apple platforms.
@@ -12,7 +12,7 @@ This is a source-level inventory, not a successful build report. The repository 
 - `Minecraft.Client/Windows64/Windows64_App.cpp` contains a desktop/console application subclass and a test-world startup path named `TemporaryCreateGameStart()`. It depends on `CMinecraftApp`, profile/storage managers, a fake local player join, and a `C4JThread` network-game thread. It is a useful reference for startup behavior, but is not an iOS entry point that can simply be compiled as-is.
 - `Minecraft.Client/Input.cpp` implements gameplay input updates using `Minecraft`, `LocalPlayer`, game mode, and world state. It may be reusable behind a new touch-input adapter, but its platform-facing callers and event source still need tracing.
 - `Minecraft.Client/glWrapper.cpp` forwards legacy-style graphics calls to `RenderManager`; it is a compatibility wrapper, not a standalone renderer. Reusing it alone will not provide Metal rendering.
-- `Minecraft.Client/Minecraft.Client.vcxproj` currently has an empty file body in the GitHub repository response. Its client build configuration cannot be used as a reliable source list until that is checked and repaired.
+- An earlier GitHub file-content request returned an empty/unsupported response for `Minecraft.Client/Minecraft.Client.vcxproj`, but the CI parser successfully read it and counted 668 sources and 911 headers. The project file is not empty; its platform configurations and source list still need analysis for iOS.
 - No `.xcodeproj` or `.xcworkspace` has been added yet. Therefore, an IPA build cannot succeed today; the workflow reports this explicitly instead of packaging a fake app.
 
 ## Porting implications
@@ -29,4 +29,4 @@ Run `python3 ios/tools/audit_sources.py` from the repository root. The script pa
 
 ## Next source-level milestone
 
-Trace the client startup path into the game loop, world creation, and rendering, then map every dependency reached by that path. Use that dependency map to select a small, real C++ source set for the first Xcode target. The IPA job is expected to stop at Xcode-project discovery until an actual iOS project and shared scheme are committed; the separate source-audit job can still succeed and provide the inventory artifact.
+Trace the client startup path into the game loop, world creation, and rendering, then map every dependency reached by that path. The current CI inventory confirms 668 client sources and 715 world sources, but neither project defines an iOS target. Use that dependency map to select a small, real C++ source set for the first Xcode target. The IPA job is expected to stop at Xcode-project discovery until an actual iOS project and shared scheme are committed; the separate source-audit job can still succeed and provide the inventory artifact.
