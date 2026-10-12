@@ -1,0 +1,124 @@
+name: Build unsigned iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios-build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-unsigned-ipa:
+    name: Build unsigned IPA
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Locate Xcode project
+        id: project
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t projects < <(find . -type d -name '*.xcodeproj' -not -path '*/Pods/*' | sort)
+          mapfile -t workspaces < <(find . -type d -name '*.xcworkspace' -not -path '*/Pods/*' | sort)
+
+          if [ "${#projects[@]}" -eq 0 ] && [ "${#workspaces[@]}" -eq 0 ]; then
+            echo "::error title=No iOS Xcode project::No .xcodeproj or .xcworkspace exists yet. The workflow is ready, but the native iOS app target must be added before an IPA can be built."
+            exit 1
+          fi
+
+          if [ "${#workspaces[@]}" -gt 0 ]; then
+            echo "kind=workspace" >> "$GITHUB_OUTPUT"
+            echo "path=${workspaces[0]}" >> "$GITHUB_OUTPUT"
+          else
+            echo "kind=project" >> "$GITHUB_OUTPUT"
+            echo "path=${projects[0]}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Select an Xcode scheme
+        id: scheme
+        shell: bash
+        env:
+          PROJECT_KIND: ${{ steps.project.outputs.kind }}
+          PROJECT_PATH: ${{ steps.project.outputs.path }}
+        run: |
+          set -euo pipefail
+          if [ "$PROJECT_KIND" = "workspace" ]; then
+            LIST_JSON="$(xcodebuild -list -json -workspace "$PROJECT_PATH")"
+          else
+            LIST_JSON="$(xcodebuild -list -json -project "$PROJECT_PATH")"
+          fi
+
+          SCHEME="$(printf '%s' "$LIST_JSON" | python3 -c 'import json,sys; d=json.load(sys.stdin); k="workspace" if "workspace" in d else "project"; s=d[k].get("schemes", []); print(s[0] if s else "")')"
+          if [ -z "$SCHEME" ]; then
+            echo "::error title=No shared Xcode scheme::The iOS project exists but Xcode reported no schemes. Add/share an app scheme before building."
+            exit 1
+          fi
+          echo "name=$SCHEME" >> "$GITHUB_OUTPUT"
+          echo "Selected scheme: $SCHEME"
+
+      - name: Archive for generic iOS device without signing
+        shell: bash
+        env:
+          PROJECT_KIND: ${{ steps.project.outputs.kind }}
+          PROJECT_PATH: ${{ steps.project.outputs.path }}
+          SCHEME: ${{ steps.scheme.outputs.name }}
+        run: |
+          set -euo pipefail
+          mkdir -p build/ios
+          COMMON_ARGS=(
+            -scheme "$SCHEME"
+            -configuration Release
+            -sdk iphoneos
+            -destination "generic/platform=iOS"
+            -archivePath "$PWD/build/ios/LegacyMobile.xcarchive"
+            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_REQUIRED=NO
+            CODE_SIGN_IDENTITY=
+          )
+
+          if [ "$PROJECT_KIND" = "workspace" ]; then
+            xcodebuild -workspace "$PROJECT_PATH" "${COMMON_ARGS[@]}" archive
+          else
+            xcodebuild -project "$PROJECT_PATH" "${COMMON_ARGS[@]}" archive
+          fi
+
+      - name: Package unsigned IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP_PATH="$PWD/build/ios/LegacyMobile.xcarchive/Products/Applications"
+          APP="$(find "$APP_PATH" -maxdepth 1 -type d -name '*.app' -print -quit)"
+          if [ -z "$APP" ]; then
+            echo "::error title=No archived iOS app::Xcode completed without producing an .app in the archive."
+            exit 1
+          fi
+
+          mkdir -p build/ios/ipa/Payload
+          cp -R "$APP" build/ios/ipa/Payload/
+          (cd build/ios/ipa && /usr/bin/zip -qry "$PWD/../LegacyMobile-unsigned.ipa" Payload)
+          test -s build/ios/LegacyMobile-unsigned.ipa
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: LegacyMobile-unsigned-ipa
+          path: build/ios/LegacyMobile-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Xcode archive for debugging
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: LegacyMobile-ios-archive
+          path: build/ios/LegacyMobile.xcarchive
+          if-no-files-found: ignore
+          retention-days: 7
