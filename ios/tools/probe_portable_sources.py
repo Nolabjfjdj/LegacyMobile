@@ -46,7 +46,7 @@ def project_sources():
 
 
 def resolve_include(including_file, include):
-    include = include.replace("\\\\", "/")
+    include = include.replace(chr(92), "/")
     candidate = (including_file.parent / include).resolve()
     if candidate.is_file():
         return candidate
