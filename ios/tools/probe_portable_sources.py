@@ -46,6 +46,7 @@ def project_sources():
 
 
 def resolve_include(including_file, include):
+    include = include.replace("\\\\", "/")
     candidate = (including_file.parent / include).resolve()
     if candidate.is_file():
         return candidate
@@ -100,7 +101,27 @@ def main():
                     if resolved not in deps:
                         deps.add(resolved)
                         queue.append(resolved)
-                elif not inc.startswith(("stdio.h", "stdlib.h", "string", "vector", "map", "set", "list", "memory", "algorithm", "math.h", "cmath", "stdint.h", "cstdint", "assert.h", "assert", "time.h", "stddef.h", "stdarg.h", "limits.h", "float.h", "ctype.h", "errno.h", "new", "typeinfo", "exception", "functional", "utility", "array", "tuple", "initializer_list", "iostream", "fstream", "sstream", "bitset", "climits", "cfloat", "cstring", "cstdlib", "cstdio", "cstdarg", "cwchar", "wchar.h", "unistd.h", "pthread.h")):
+                elif inc not in {
+                    "stdio.h", "stdlib.h", "string", "string.h", "vector", "map", "set",
+                    "list", "memory", "algorithm", "math.h", "cmath", "stdint.h", "cstdint",
+                    "assert.h", "assert", "time.h", "stddef.h", "stdarg.h", "limits.h",
+                    "float.h", "ctype.h", "errno.h", "new", "typeinfo", "exception",
+                    "functional", "utility", "array", "tuple", "initializer_list", "iostream",
+                    "fstream", "sstream", "bitset", "climits", "cfloat", "cstring", "cstdlib",
+                    "cstdio", "cstdarg", "cwchar", "wchar.h", "unistd.h", "pthread.h",
+                    "unordered_map", "unordered_set", "deque", "queue", "stack", "limits",
+                    "map", "set", "list", "iterator", "numeric", "random", "chrono", "thread",
+                    "mutex", "condition_variable", "atomic", "optional", "variant", "string_view",
+                    "regex", "locale", "codecvt", "filesystem", "ios", "iosfwd", "iomanip",
+                    "fstream", "sstream", "streambuf", "cstdio", "cstdlib", "cstring", "cctype",
+                    "cwctype", "cerrno", "clocale", "csignal", "csetjmp", "cstdarg", "cstddef",
+                    "cstdint", "cmath", "cfenv", "cinttypes", "cfloat", "climits", "ctime",
+                    "cuchar", "cwchar", "cwctype", "type_traits", "typeindex", "typeinfo",
+                    "memory_resource", "scoped_allocator", "forward_list", "unordered_map",
+                    "unordered_set", "shared_mutex", "future", "system_error", "stdexcept",
+                    "cassert", "ciso646", "ccomplex", "ctgmath", "cstdbool", "cstdalign",
+                    "cstdnoreturn", "barrier", "latch", "semaphore", "span", "ranges"
+                }:
                     missing.add(f"{relative_current}:{line_no}: {inc}")
         graph[source.relative_to(ROOT).as_posix()] = sorted(
             p.relative_to(ROOT).as_posix() if p.is_relative_to(ROOT) else str(p) for p in deps
