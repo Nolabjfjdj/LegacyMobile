@@ -29,6 +29,9 @@ jobs:
       - name: Generate renderer API dependency inventory
         run: python3 ios/tools/audit_renderer_api.py build/ios/renderer-api-inventory.json
 
+      - name: Test iOS conditional dependency filtering
+        run: python3 -m unittest discover -s ios/tools/tests -p "test_*.py" -v
+
       - name: Probe transitive C++ dependencies for iOS
         run: python3 ios/tools/probe_portable_sources.py build/ios/portable-source-probe.json
 
