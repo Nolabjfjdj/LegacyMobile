@@ -66,16 +66,20 @@ jobs:
           elif projects:
               kind, path = "project", projects[0]
           else:
-              print("::error title=No iOS Xcode project::No .xcodeproj or .xcworkspace exists yet. The workflow is ready, but the native iOS app target must be added before an IPA can be built.")
-              raise SystemExit(1)
+              with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+                  output.write("found=false\n")
+              print("::notice title=IPA build deferred::No Xcode project exists yet. The source audit will run, and the IPA steps will be skipped until the native iOS app target is added.")
+              raise SystemExit(0)
 
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write("found=true\n")
               output.write(f"kind={kind}\n")
               output.write(f"path={path}\n")
           print(f"Using {kind}: {path}")
           PY
 
       - name: Select an Xcode scheme
+        if: steps.project.outputs.found == 'true'
         id: scheme
         shell: bash
         env:
@@ -98,6 +102,7 @@ jobs:
           echo "Selected scheme: $SCHEME"
 
       - name: Archive for generic iOS device without signing
+        if: steps.project.outputs.found == 'true'
         shell: bash
         env:
           PROJECT_KIND: ${{ steps.project.outputs.kind }}
@@ -124,6 +129,7 @@ jobs:
           fi
 
       - name: Package unsigned IPA
+        if: steps.project.outputs.found == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -140,6 +146,7 @@ jobs:
           test -s build/ios/LegacyMobile-unsigned.ipa
 
       - name: Upload unsigned IPA
+        if: steps.project.outputs.found == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: LegacyMobile-unsigned-ipa
@@ -148,7 +155,7 @@ jobs:
           retention-days: 14
 
       - name: Upload Xcode archive for debugging
-        if: always()
+        if: always() && steps.project.outputs.found == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: LegacyMobile-ios-archive
