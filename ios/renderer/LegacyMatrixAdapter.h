@@ -23,7 +23,7 @@ public:
     const MatrixStacks& stacks() const;
 
 private:
-    static MatrixMode decodeMode(int mode);
+    static ios_renderer::MatrixMode decodeMode(int mode);
 
     MatrixStacks stacks_;
     bool matrixDirty_ = true;
