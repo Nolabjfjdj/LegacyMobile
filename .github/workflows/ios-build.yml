@@ -113,8 +113,8 @@ jobs:
           else:
               with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
                   output.write("found=false\n")
-              print("::notice title=IPA build deferred::No Xcode project exists yet. The source audit will run, and the IPA steps will be skipped until the native iOS app target is added.")
-              raise SystemExit(0)
+              print("::error title=No iOS app target::No .xcodeproj or .xcworkspace exists. Source audits may pass, but this job cannot claim an IPA build until a real iOS app target is added.")
+              raise SystemExit(1)
 
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
               output.write("found=true\n")
