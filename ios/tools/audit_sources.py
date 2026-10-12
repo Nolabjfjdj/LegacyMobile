@@ -63,9 +63,11 @@ def main():
         "projects": [read_project(path) for path in PROJECTS],
         "ios_project_files": sorted(
             str(path.relative_to(ROOT))
-            for pattern in ("*.xcodeproj/project.pbxproj", "*.xcworkspace/contents.xcworkspacedata")
-            for path in ROOT.rglob(pattern)
-            if "Pods" not in path.parts and "build" not in path.parts
+            for path in ROOT.rglob("*")
+            if path.is_dir()
+            and path.suffix in {".xcodeproj", ".xcworkspace"}
+            and "Pods" not in path.parts
+            and "build" not in path.parts
         ),
     }
     output = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "ios" / "source-inventory.json"
