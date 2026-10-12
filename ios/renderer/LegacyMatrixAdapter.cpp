@@ -15,6 +15,7 @@ MatrixMode LegacyMatrixAdapter::decodeMode(int mode) {
 
 void LegacyMatrixAdapter::MatrixMode(int mode) {
     stacks_.setMode(decodeMode(mode));
+    matrixDirty_ = true;
 }
 
 void LegacyMatrixAdapter::MatrixSetIdentity() {
