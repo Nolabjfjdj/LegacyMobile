@@ -6,17 +6,34 @@ on:
     branches:
       - main
     paths:
-      - "ios/**/*.xcodeproj/**"
-      - "ios/**/*.xcworkspace/**"
-      - "ios/**/*.swift"
-      - "ios/**/*.mm"
-      - "ios/**/*.cpp"
-      - "ios/**/*.h"
+      - "ios/**"
+      - "Minecraft.Client/**"
+      - "Minecraft.World/**"
+      - ".github/workflows/ios-build.yml"
 
 permissions:
   contents: read
 
 jobs:
+  source-audit:
+    name: Audit C++ sources for iOS porting
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate source inventory
+        run: python3 ios/tools/audit_sources.py build/ios/source-inventory.json
+
+      - name: Upload source inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: LegacyMobile-source-inventory
+          path: build/ios/source-inventory.json
+          if-no-files-found: error
+          retention-days: 14
+
   build-unsigned-ipa:
     name: Build unsigned IPA
     runs-on: macos-15
