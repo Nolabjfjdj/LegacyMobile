@@ -29,6 +29,9 @@ jobs:
       - name: Generate renderer API dependency inventory
         run: python3 ios/tools/audit_renderer_api.py build/ios/renderer-api-inventory.json
 
+      - name: Probe transitive C++ dependencies for iOS
+        run: python3 ios/tools/probe_portable_sources.py build/ios/portable-source-probe.json
+
       - name: Upload source inventory
         uses: actions/upload-artifact@v4
         with:
@@ -42,6 +45,14 @@ jobs:
         with:
           name: LegacyMobile-renderer-api-inventory
           path: build/ios/renderer-api-inventory.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload portable source probe
+        uses: actions/upload-artifact@v4
+        with:
+          name: LegacyMobile-portable-source-probe
+          path: build/ios/portable-source-probe.json
           if-no-files-found: error
           retention-days: 14
 
