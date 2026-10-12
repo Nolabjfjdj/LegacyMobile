@@ -39,6 +39,13 @@ void MobileInputState::setButton(std::uint32_t& buttons, InputButton button, boo
 
 void MobileInputState::setControllerConnected(bool connected) {
     std::lock_guard<std::mutex> lock(mutex_);
+    if (connected && !controllerConnected_) {
+        touchMoveX_ = 0.0f;
+        touchMoveY_ = 0.0f;
+        touchLookX_ = 0.0f;
+        touchLookY_ = 0.0f;
+        touchButtons_ = 0;
+    }
     controllerConnected_ = connected;
     if (!connected) {
         controllerMoveX_ = 0.0f;
@@ -56,8 +63,10 @@ bool MobileInputState::shouldShowTouchControls() const {
 
 void MobileInputState::setTouchMovement(float x, float y) {
     std::lock_guard<std::mutex> lock(mutex_);
-    touchMoveX_ = clampAxis(x);
-    touchMoveY_ = clampAxis(y);
+    if (!controllerConnected_) {
+        touchMoveX_ = clampAxis(x);
+        touchMoveY_ = clampAxis(y);
+    }
 }
 
 void MobileInputState::addTouchLookDelta(float x, float y) {
