@@ -57,10 +57,29 @@ def read_project(path):
 
 
 def main():
+    platform_headers = {}
+    for path in (
+        ROOT / "Minecraft.Client" / "stdafx.h",
+        ROOT / "Minecraft.World" / "stdafx.h",
+    ):
+        if path.is_file():
+            lines = path.read_text(encoding="utf-8-sig", errors="replace").splitlines()
+            platform_headers[str(path.relative_to(ROOT))] = [
+                {"line": index, "text": line.strip()}
+                for index, line in enumerate(lines, start=1)
+                if re.search(
+                    r"windows\\.h|d3d11\\.h|DirectXMath|xdk\\.h|xuiapp\\.h|"
+                    r"scebase\\.h|Ps3Types\\.h|OrbisTypes\\.h|PSVitaTypes\\.h|"
+                    r"__PS3__|__PSVITA__|_WINDOWS64|_DURANGO|_XBOX",
+                    line,
+                    re.I,
+                )
+            ]
     report = {
         "report_type": "source_inventory_not_build_validation",
         "repository_root": str(ROOT),
         "projects": [read_project(path) for path in PROJECTS],
+        "platform_header_matches": platform_headers,
         "ios_project_files": sorted(
             str(path.relative_to(ROOT))
             for path in ROOT.rglob("*")
@@ -79,6 +98,8 @@ def main():
         else:
             print(f"{project['path']}: {project['cpp_source_count']} C++ sources, {project['header_count']} headers")
     print(f"iOS project files found: {len(report['ios_project_files'])}")
+    for path, matches in report["platform_header_matches"].items():
+        print(f"{path}: {len(matches)} platform-specific lines to review")
     print(f"Inventory written to: {output}")
     return 0
 
