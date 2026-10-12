@@ -68,8 +68,8 @@ def main():
                 {"line": index, "text": line.strip()}
                 for index, line in enumerate(lines, start=1)
                 if re.search(
-                    r"windows\\.h|d3d11\\.h|DirectXMath|xdk\\.h|xuiapp\\.h|"
-                    r"scebase\\.h|Ps3Types\\.h|OrbisTypes\\.h|PSVitaTypes\\.h|"
+                    r"windows\.h|d3d11\.h|DirectXMath|xdk\.h|xuiapp\.h|"
+                    r"scebase\.h|Ps3Types\.h|OrbisTypes\.h|PSVitaTypes\.h|"
                     r"__PS3__|__PSVITA__|_WINDOWS64|_DURANGO|_XBOX",
                     line,
                     re.I,
