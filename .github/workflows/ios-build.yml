@@ -26,21 +26,33 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t projects < <(find . -type d -name '*.xcodeproj' -not -path '*/Pods/*' | sort)
-          mapfile -t workspaces < <(find . -type d -name '*.xcworkspace' -not -path '*/Pods/*' | sort)
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
 
-          if [ "${#projects[@]}" -eq 0 ] && [ "${#workspaces[@]}" -eq 0 ]; then
-            echo "::error title=No iOS Xcode project::No .xcodeproj or .xcworkspace exists yet. The workflow is ready, but the native iOS app target must be added before an IPA can be built."
-            exit 1
-          fi
+          root = Path(".")
+          workspaces = sorted(
+              p for p in root.rglob("*.xcworkspace")
+              if "Pods" not in p.parts and p.is_dir()
+          )
+          projects = sorted(
+              p for p in root.rglob("*.xcodeproj")
+              if "Pods" not in p.parts and p.is_dir()
+          )
 
-          if [ "${#workspaces[@]}" -gt 0 ]; then
-            echo "kind=workspace" >> "$GITHUB_OUTPUT"
-            echo "path=${workspaces[0]}" >> "$GITHUB_OUTPUT"
-          else
-            echo "kind=project" >> "$GITHUB_OUTPUT"
-            echo "path=${projects[0]}" >> "$GITHUB_OUTPUT"
-          fi
+          if workspaces:
+              kind, path = "workspace", workspaces[0]
+          elif projects:
+              kind, path = "project", projects[0]
+          else:
+              print("::error title=No iOS Xcode project::No .xcodeproj or .xcworkspace exists yet. The workflow is ready, but the native iOS app target must be added before an IPA can be built.")
+              raise SystemExit(1)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"kind={kind}\\n")
+              output.write(f"path={path}\\n")
+          print(f"Using {kind}: {path}")
+          PY
 
       - name: Select an Xcode scheme
         id: scheme
