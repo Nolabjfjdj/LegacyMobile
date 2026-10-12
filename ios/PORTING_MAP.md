@@ -2,6 +2,18 @@
 
 This document records source paths verified in the repository. It is a dependency map, not a claim that the game can currently build on iOS.
 
+## Priority order (updated 2026-10-12)
+
+**Current milestone: produce a real, launchable iOS app containing the game engine.** Do not spend the next implementation steps on touch UI or Bluetooth controls; keep the existing platform-neutral input work intact for a later milestone.
+
+1. Establish a minimal iOS host and compile a real, deliberately small subset of the engine on the macOS runner. A placeholder app that launches without the engine does not count as completion.
+2. Resolve the first compile blockers in dependency order: platform headers and synchronization/types, filesystem/save paths, and the renderer contract.
+3. Implement enough Metal-backed rendering and startup to reach an actual engine-owned screen/frame. Do not report an IPA as playable until the engine is linked and its launch path is exercised.
+4. Add the Xcode project/scheme and make the workflow fail if it cannot find/build the intended target. Package an unsigned IPA only after a successful archive.
+5. Only after that executable milestone, integrate the saved touch controls and GameController/DualSense adapter.
+
+The current CI success for source inventory and input unit tests is not an iOS build. In the last checked run, the Xcode project lookup found zero projects, so archive and IPA steps were skipped. Keep that distinction explicit in all future build reports.
+
 ## Verified game entry and runtime
 
 - `Minecraft.Client/Minecraft.cpp` owns the `Minecraft` runtime. It defines the singleton `Minecraft::m_instance`, constructs the runtime in `Minecraft::Minecraft(...)`, and declares the main lifecycle methods `init()`, `run()`, `run_middle()`, `run_end()`, and `tick(...)`.
