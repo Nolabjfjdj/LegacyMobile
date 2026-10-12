@@ -37,8 +37,9 @@ int main() {
     assert(input.shouldShowTouchControls());
     auto disconnected = input.snapshot();
     assert(!disconnected.controllerConnected);
-    assert(std::fabs(disconnected.moveX - 1.0f) < 0.001f);
+    assert(std::fabs(disconnected.moveX) < 0.001f);
     assert(!disconnected.isPressed(InputButton::PrimaryAction));
+    assert(!disconnected.isPressed(InputButton::Jump));
 
     input.setTouchMovement(std::numeric_limits<float>::quiet_NaN(), 0.0f);
     assert(std::fabs(input.snapshot().moveX) < 0.001f);
