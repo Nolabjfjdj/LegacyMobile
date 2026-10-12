@@ -45,6 +45,79 @@ def project_sources():
     return found, errors
 
 
+IOS_MACROS = {"__APPLE__", "__MACH__", "TARGET_OS_IPHONE", "TARGET_OS_IOS", "LEGACYMOBILE_IOS"}
+NON_IOS_MACROS = {"_WINDOWS64", "_DURANGO", "_XBOX", "__PS3__", "__ORBIS__", "__PSVITA__"}
+
+
+def condition_value(expression):
+    expression = expression.strip()
+    match = re.fullmatch(r"!\s*defined\s*\(?\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)?", expression)
+    if match:
+        name = match.group(1)
+        if name in IOS_MACROS:
+            return False
+        if name in NON_IOS_MACROS:
+            return True
+        return None
+    match = re.fullmatch(r"defined\s*\(?\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)?", expression)
+    if match:
+        name = match.group(1)
+        if name in IOS_MACROS:
+            return True
+        if name in NON_IOS_MACROS:
+            return False
+        return None
+    match = re.fullmatch(r"(?:!\s*)?(?:defined\s+)?([A-Za-z_][A-Za-z0-9_]*)", expression)
+    if match:
+        name = match.group(1)
+        negated = expression.startswith("!")
+        if name in IOS_MACROS:
+            return not negated
+        if name in NON_IOS_MACROS:
+            return negated
+    return None
+
+
+def active_source_lines(lines):
+    """Return lines active for known iOS/platform macros; retain unknown branches conservatively."""
+    result = []
+    stack = []
+    active = True
+    for line in lines:
+        directive = re.match(r"^\s*#\s*(if|ifdef|ifndef|elif|else|endif)\b(.*)$", line)
+        if not directive:
+            if active:
+                result.append(line)
+            continue
+        kind, expression = directive.group(1), directive.group(2).strip()
+        if kind in {"if", "ifdef", "ifndef"}:
+            if kind == "ifdef":
+                value = condition_value("defined(" + expression + ")")
+            elif kind == "ifndef":
+                value = condition_value("!defined(" + expression + ")")
+            else:
+                value = condition_value(expression)
+            stack.append({"parent": active, "condition": value, "taken": value is True, "unknown": value is None})
+            active = active and value is not False
+        elif kind == "elif" and stack:
+            frame = stack[-1]
+            value = condition_value(expression)
+            if frame["unknown"] or value is None:
+                active = frame["parent"]
+                frame["unknown"] = True
+            else:
+                active = frame["parent"] and not frame["taken"] and value
+                frame["taken"] = frame["taken"] or value
+        elif kind == "else" and stack:
+            frame = stack[-1]
+            active = frame["parent"] if frame["unknown"] else frame["parent"] and not frame["taken"]
+            frame["taken"] = True
+        elif kind == "endif" and stack:
+            frame = stack.pop()
+            active = frame["parent"]
+    return result
+
+
 def resolve_include(including_file, include):
     include = include.replace(chr(92), "/")
     candidate = (including_file.parent / include).resolve()
@@ -82,7 +155,7 @@ def main():
             if PLATFORM_RE.search(relative_current):
                 platforms.add(relative_current)
             try:
-                lines = read_text(current).splitlines()
+                lines = active_source_lines(read_text(current).splitlines())
             except OSError:
                 continue
             for line_no, line in enumerate(lines, 1):
@@ -134,7 +207,8 @@ def main():
         if not direct_platform.get(name) and not missing_local.get(name)
     ]
     report = {
-        "report_type": "transitive_include_probe_not_compiler_validation",
+        "report_type": "ios_condition_aware_transitive_include_probe_not_compiler_validation",
+        "preprocessor_target": "iOS (known platform macros only)",
         "project_source_count": len(sources),
         "visited_file_count": len(visited_files),
         "source_files_with_no_detected_platform_or_unresolved_includes": len(candidates),
@@ -145,7 +219,7 @@ def main():
         "errors": errors,
         "limitations": [
             "This is a conservative text scan, not an Apple Clang compile.",
-            "Preprocessor conditions are not evaluated, so inactive platform includes can be reported.",
+            "Known iOS and legacy-platform preprocessor branches are filtered; unknown macro expressions are conservatively retained.",
             "System and third-party include classification is heuristic.",
             "A source file can still fail to compile because of types, APIs, linker symbols, or build settings."
         ]
