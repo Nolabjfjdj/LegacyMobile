@@ -113,6 +113,18 @@ jobs:
       - name: Run legacy matrix adapter tests
         run: ./build/ios/legacy-matrix-adapter-tests
 
+      - name: Compile Metal clip-space conversion tests
+        run: |
+          set -euo pipefail
+          c++ -std=c++17 -Wall -Wextra -Werror -pedantic \
+            ios/renderer/MatrixStacks.cpp \
+            ios/renderer/MetalClipSpace.cpp \
+            ios/renderer/tests/MetalClipSpaceTests.cpp \
+            -o build/ios/metal-clip-space-tests
+
+      - name: Run Metal clip-space conversion tests
+        run: ./build/ios/metal-clip-space-tests
+
   build-unsigned-ipa:
     name: Build unsigned IPA
     runs-on: macos-15
