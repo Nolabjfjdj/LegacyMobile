@@ -26,11 +26,22 @@ jobs:
       - name: Generate source inventory
         run: python3 ios/tools/audit_sources.py build/ios/source-inventory.json
 
+      - name: Generate renderer API dependency inventory
+        run: python3 ios/tools/audit_renderer_api.py build/ios/renderer-api-inventory.json
+
       - name: Upload source inventory
         uses: actions/upload-artifact@v4
         with:
           name: LegacyMobile-source-inventory
           path: build/ios/source-inventory.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload renderer API inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: LegacyMobile-renderer-api-inventory
+          path: build/ios/renderer-api-inventory.json
           if-no-files-found: error
           retention-days: 14
 
