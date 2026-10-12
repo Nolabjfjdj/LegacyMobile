@@ -6,8 +6,12 @@ on:
     branches:
       - main
     paths:
-      - "ios/**"
-      - ".github/workflows/ios-build.yml"
+      - "ios/**/*.xcodeproj/**"
+      - "ios/**/*.xcworkspace/**"
+      - "ios/**/*.swift"
+      - "ios/**/*.mm"
+      - "ios/**/*.cpp"
+      - "ios/**/*.h"
 
 permissions:
   contents: read
@@ -49,8 +53,8 @@ jobs:
               raise SystemExit(1)
 
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
-              output.write(f"kind={kind}\\n")
-              output.write(f"path={path}\\n")
+              output.write(f"kind={kind}\n")
+              output.write(f"path={path}\n")
           print(f"Using {kind}: {path}")
           PY
 
