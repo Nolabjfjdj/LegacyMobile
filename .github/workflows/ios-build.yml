@@ -29,6 +29,9 @@ jobs:
       - name: Generate renderer API dependency inventory
         run: python3 ios/tools/audit_renderer_api.py build/ios/renderer-api-inventory.json
 
+      - name: Audit available renderer implementation sources
+        run: python3 ios/tools/audit_renderer_implementation.py build/ios/renderer-implementation-inventory.json
+
       - name: Test iOS conditional dependency filtering
         run: python3 -m unittest discover -s ios/tools/tests -p "test_*.py" -v
 
@@ -48,6 +51,14 @@ jobs:
         with:
           name: LegacyMobile-renderer-api-inventory
           path: build/ios/renderer-api-inventory.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload renderer implementation inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: LegacyMobile-renderer-implementation-inventory
+          path: build/ios/renderer-implementation-inventory.json
           if-no-files-found: error
           retention-days: 14
 
