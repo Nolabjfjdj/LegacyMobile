@@ -1,4 +1,11 @@
 #pragma once
+
+#ifdef IOS_PORT
+#include "../ios/platform/IOSWorldPreamble.h"
+#else
+#include <string>
+#endif
+
 using namespace std;
 
 class AABB;
