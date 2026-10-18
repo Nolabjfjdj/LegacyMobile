@@ -15,6 +15,7 @@ targets:
     platform: iOS
     sources:
       - path: App
+      - path: ../Minecraft.World/Vec3.cpp
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: site.legacy-mobile.app
@@ -26,3 +27,12 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         SUPPORTS_MACCATALYST: NO
         CODE_SIGNING_ALLOWED: NO
+        SWIFT_OBJC_BRIDGING_HEADER: App/LegacyMobile-Bridging-Header.h
+        GCC_PREPROCESSOR_DEFINITIONS:
+          - $(inherited)
+          - IOS_PORT=1
+        HEADER_SEARCH_PATHS:
+          - $(inherited)
+          - $(SRCROOT)/../Minecraft.World
+        CLANG_CXX_LANGUAGE_STANDARD: c++17
+        DEAD_CODE_STRIPPING: YES
