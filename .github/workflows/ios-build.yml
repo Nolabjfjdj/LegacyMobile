@@ -145,6 +145,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install XcodeGen
+        run: |
+          set -euo pipefail
+          if ! command -v xcodegen >/dev/null 2>&1; then
+            brew install xcodegen
+          fi
+
+      - name: Generate native iOS project
+        working-directory: ios
+        run: |
+          set -euo pipefail
+          xcodegen generate --spec project.yml
+          test -d LegacyMobile.xcodeproj
+
       - name: Locate Xcode project
         id: project
         shell: bash
