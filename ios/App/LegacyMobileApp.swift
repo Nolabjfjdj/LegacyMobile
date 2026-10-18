@@ -13,6 +13,8 @@ struct LegacyMobileApp: App {
 }
 
 struct RendererScreen: View {
+    @State private var engineStatus = LegacyEngineBridge.runCoreSmokeTest()
+
     var body: some View {
         ZStack(alignment: .topLeading) {
             Color(red: 0.035, green: 0.055, blue: 0.09)
@@ -25,12 +27,16 @@ struct RendererScreen: View {
                 Text("iOS · Metal renderer")
                     .font(.system(size: 14, weight: .medium, design: .monospaced))
                     .foregroundStyle(.white.opacity(0.72))
+                Text(engineStatus)
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.green.opacity(0.95))
+                    .padding(.top, 4)
             }
             .padding(.horizontal, 22)
             .padding(.top, 18)
             VStack {
                 Spacer()
-                Text("Renderer foundation · game engine integration in progress")
+                Text("C++ Vec3 source linked · full game engine integration still in progress")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.white.opacity(0.68))
                     .multilineTextAlignment(.center)
