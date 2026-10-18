@@ -27,7 +27,7 @@ struct RendererScreen: View {
                 Text("iOS · Metal renderer")
                     .font(.system(size: 14, weight: .medium, design: .monospaced))
                     .foregroundStyle(.white.opacity(0.72))
-                Text(engineStatus)
+                Text(engineStatus ?? "Legacy C++ core status unavailable")
                     .font(.system(size: 11, weight: .medium, design: .monospaced))
                     .foregroundStyle(.green.opacity(0.95))
                     .padding(.top, 4)
