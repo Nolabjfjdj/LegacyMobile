@@ -140,10 +140,10 @@ jobs:
       - name: Compile legacy Random source for iOS portability
         run: |
           set -euo pipefail
-          c++ -std=c++17 -Wall -Wextra -Werror -pedantic -DIOS_PORT \\
-            -IMinecraft.World \\
-            Minecraft.World/Random.cpp \\
-            ios/platform/tests/RandomPortabilityTests.cpp \\
+          c++ -std=c++17 -Wall -Wextra -Werror -pedantic -DIOS_PORT \
+            -IMinecraft.World \
+            Minecraft.World/Random.cpp \
+            ios/platform/tests/RandomPortabilityTests.cpp \
             -o build/ios/random-portability-tests
 
       - name: Run portable legacy Random tests
