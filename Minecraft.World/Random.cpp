@@ -9,13 +9,15 @@
 
 Random::Random()
 {
-	// 4J - jave now uses the system nanosecond counter added to a "seedUniquifier" to get an initial seed. Our nanosecond timer is actually only millisecond accuate, so
-	// use QueryPerformanceCounter here instead
-	__int64 seed;
-	QueryPerformanceCounter((LARGE_INTEGER *)&seed);
-	seed += 8682522807148012LL;
-
-	setSeed(seed);
+#if defined(IOS_PORT)
+    const auto ticks = std::chrono::steady_clock::now().time_since_epoch().count();
+    setSeed(static_cast<__int64>(ticks) + 8682522807148012LL);
+#else
+    __int64 seed;
+    QueryPerformanceCounter((LARGE_INTEGER *)&seed);
+    seed += 8682522807148012LL;
+    setSeed(seed);
+#endif
 }
 
 Random::Random(__int64 seed)
