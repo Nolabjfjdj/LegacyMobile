@@ -137,6 +137,18 @@ jobs:
       - name: Run portable legacy Vec3 tests
         run: ./build/ios/vec3-portability-tests
 
+      - name: Compile legacy Random source for iOS portability
+        run: |
+          set -euo pipefail
+          c++ -std=c++17 -Wall -Wextra -Werror -pedantic -DIOS_PORT \\
+            -IMinecraft.World \\
+            Minecraft.World/Random.cpp \\
+            ios/platform/tests/RandomPortabilityTests.cpp \\
+            -o build/ios/random-portability-tests
+
+      - name: Run portable legacy Random tests
+        run: ./build/ios/random-portability-tests
+
   build-unsigned-ipa:
     name: Build unsigned IPA
     runs-on: macos-15
