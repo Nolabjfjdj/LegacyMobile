@@ -1,5 +1,9 @@
 #pragma once
 
+#if defined(IOS_PORT)
+#include "../ios/platform/IOSWorldPreamble.h"
+#endif
+
 class Random
 {
 private:
