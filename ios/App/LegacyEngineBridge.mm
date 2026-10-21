@@ -1,5 +1,6 @@
 #import "LegacyEngineBridge.h"
 #include "Vec3.h"
+#include "Random.h"
 #include <cmath>
 
 @implementation LegacyEngineBridge
@@ -14,10 +15,19 @@
         std::fabs(translated->y - 2.0) < 1e-9 &&
         std::fabs(translated->z - 3.0) < 1e-9;
     Vec3::ReleaseThreadStorage();
-    if (valid) {
-        return [NSString stringWithFormat:@"Legacy C++ core linked · Vec3 passed · length %.1f", length];
+    Random first(12345);
+    Random second(12345);
+    bool randomValid = true;
+    for (int index = 0; index < 16; ++index) {
+        if (first.nextInt(100000) != second.nextInt(100000)) {
+            randomValid = false;
+            break;
+        }
     }
-    return @"Legacy C++ core linked · Vec3 check failed";
+    if (valid && randomValid) {
+        return [NSString stringWithFormat:@"Legacy C++ core linked · Vec3 + Random passed · length %.1f", length];
+    }
+    return @"Legacy C++ core linked · core check failed";
 }
 
 @end
