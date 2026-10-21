@@ -27,6 +27,8 @@
 using namespace std;
 
 using DWORD = std::uint32_t;
+using __int64 = long long;
+using byte = unsigned char;
 
 namespace ios_port_tls {
 inline std::atomic<DWORD> nextIndex{1};
