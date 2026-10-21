@@ -16,7 +16,7 @@ public:
 	Random();
 	Random(__int64 seed);
 	void setSeed(__int64 s);
-	void nextBytes(byte *bytes, unsigned int count);
+	void nextBytes(::byte *bytes, unsigned int count);
 	double nextDouble();
 	double nextGaussian();
 	int nextInt();
