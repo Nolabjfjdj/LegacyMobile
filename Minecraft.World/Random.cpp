@@ -1,6 +1,11 @@
 #include "stdafx.h"	
 #include "Random.h"
+#if defined(IOS_PORT)
+#include <chrono>
+#endif
+#if !defined(IOS_PORT)
 #include "System.h"
+#endif
 
 Random::Random()
 {
