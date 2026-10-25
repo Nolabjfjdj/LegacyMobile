@@ -16,6 +16,8 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <cstdlib>
+#include <cstring>
 #include <mutex>
 #include <queue>
 #include <set>
@@ -30,6 +32,19 @@ using namespace std;
 using DWORD = std::uint32_t;
 using __int64 = long long;
 using byte = unsigned char;
+using BYTE = unsigned char;
+using ULONG_PTR = std::uintptr_t;
+constexpr ULONG_PTR MAXULONG_PTR = std::numeric_limits<ULONG_PTR>::max();
+constexpr unsigned long PAGE_READWRITE = 0x04;
+
+inline void* XPhysicalAlloc(std::size_t size, ULONG_PTR, ULONG_PTR alignment, unsigned long) {
+    void* memory = nullptr;
+    const std::size_t safeAlignment = alignment < sizeof(void*) ? sizeof(void*) : alignment;
+    return posix_memalign(&memory, safeAlignment, size) == 0 ? memory : nullptr;
+}
+inline void XPhysicalFree(void* memory) { std::free(memory); }
+inline void* XMemCpy(void* destination, const void* source, std::size_t size) { return std::memcpy(destination, source, size); }
+inline void* XMemSet(void* destination, int value, std::size_t size) { return std::memset(destination, value, size); }
 
 struct CRITICAL_SECTION {
     std::recursive_mutex mutex;
