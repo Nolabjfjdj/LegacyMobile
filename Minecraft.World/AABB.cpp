@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 #include "AABB.h"
+#include "StringHelpers.h"
 #include "HitResult.h"
 
 DWORD AABB::tlsIdx = 0;

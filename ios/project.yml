@@ -17,6 +17,7 @@ targets:
       - path: App
       - path: ../Minecraft.World/Vec3.cpp
       - path: ../Minecraft.World/Random.cpp
+      - path: ../Minecraft.World/AABB.cpp
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: site.legacy-mobile.app
