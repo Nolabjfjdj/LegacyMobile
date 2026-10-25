@@ -29,11 +29,19 @@ public:
     T operator[](unsigned int index) const { return data[index]; }
 };
 
-using byteArray = arrayWithLength<byte>;
+using byteArray = arrayWithLength<::byte>;
 using charArray = arrayWithLength<char>;
 
 #include "DataInputStream.h"
 #include "DataOutputStream.h"
+
+enum ByteOrder { BIGENDIAN, LITTLEENDIAN, LOCALSYTEM_ENDIAN = LITTLEENDIAN };
+
+struct System {
+    static void ReverseUSHORT(unsigned short *value) {
+        *value = static_cast<unsigned short>((*value >> 8) | (*value << 8));
+    }
+};
 
 template <typename T>
 class XLockFreeStack
