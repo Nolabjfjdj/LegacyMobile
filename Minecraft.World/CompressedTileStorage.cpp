@@ -1051,11 +1051,15 @@ void  CompressedTileStorage::compress(int upgradeBlock/*=-1*/)
 		unsigned char *newIndicesAndData = (unsigned char *)XPhysicalAlloc(memToAlloc, MAXULONG_PTR, 4096, PAGE_READWRITE);//(unsigned char *)malloc( memToAlloc );
 		if( newIndicesAndData == NULL )
 		{
+#if defined(IOS_PORT)
+            std::abort();
+#else
 			DWORD lastError = GetLastError();
 #ifndef _DURANGO
 			MEMORYSTATUS memStatus;
 			GlobalMemoryStatus(&memStatus);
 			__debugbreak();
+#endif
 #endif
 		}
 		unsigned char *pucData = newIndicesAndData + 1024;
