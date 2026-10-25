@@ -16,6 +16,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <queue>
 #include <set>
 #include <sstream>
@@ -29,6 +30,19 @@ using namespace std;
 using DWORD = std::uint32_t;
 using __int64 = long long;
 using byte = unsigned char;
+
+struct CRITICAL_SECTION {
+    std::recursive_mutex mutex;
+};
+
+inline void InitializeCriticalSection(CRITICAL_SECTION*) {}
+inline void DeleteCriticalSection(CRITICAL_SECTION*) {}
+inline void EnterCriticalSection(CRITICAL_SECTION* section) {
+    section->mutex.lock();
+}
+inline void LeaveCriticalSection(CRITICAL_SECTION* section) {
+    section->mutex.unlock();
+}
 
 namespace ios_port_tls {
 inline std::atomic<DWORD>& nextIndex() {
