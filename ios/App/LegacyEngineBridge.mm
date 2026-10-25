@@ -22,6 +22,12 @@
         !body->intersects(2.0, 0.0, 0.0, 3.0, 1.0, 1.0);
     AABB::ReleaseThreadStorage();
     Vec3::ReleaseThreadStorage();
+    CRITICAL_SECTION lock;
+    InitializeCriticalSection(&lock);
+    EnterCriticalSection(&lock);
+    LeaveCriticalSection(&lock);
+    DeleteCriticalSection(&lock);
+    const bool synchronizationValid = true;
     Random first(12345);
     Random second(12345);
     bool randomValid = true;
@@ -31,8 +37,8 @@
             break;
         }
     }
-    if (valid && randomValid && collisionValid) {
-        return [NSString stringWithFormat:@"Legacy C++ core linked · Vec3 + Random + AABB collisions passed · length %.1f", length];
+    if (valid && randomValid && collisionValid && synchronizationValid) {
+        return [NSString stringWithFormat:@"Legacy C++ core linked · Vec3 + Random + AABB + iOS mutex passed · length %.1f", length];
     }
     return @"Legacy C++ core linked · core check failed";
 }
