@@ -18,7 +18,6 @@ targets:
       - path: ../Minecraft.World/Vec3.cpp
       - path: ../Minecraft.World/Random.cpp
       - path: ../Minecraft.World/AABB.cpp
-      - path: ../Minecraft.World/CompressedTileStorage.cpp
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: site.legacy-mobile.app
@@ -37,6 +36,5 @@ targets:
         HEADER_SEARCH_PATHS:
           - $(inherited)
           - $(SRCROOT)/../Minecraft.World
-          - $(SRCROOT)/../Minecraft.World/x64headers
         CLANG_CXX_LANGUAGE_STANDARD: c++17
         DEAD_CODE_STRIPPING: YES
