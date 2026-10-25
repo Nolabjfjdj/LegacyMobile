@@ -51,6 +51,10 @@ struct CRITICAL_SECTION {
 };
 
 inline void InitializeCriticalSection(CRITICAL_SECTION*) {}
+inline int InitializeCriticalSectionAndSpinCount(CRITICAL_SECTION* section, unsigned long) {
+    InitializeCriticalSection(section);
+    return 1;
+}
 inline void DeleteCriticalSection(CRITICAL_SECTION*) {}
 inline void EnterCriticalSection(CRITICAL_SECTION* section) {
     section->mutex.lock();
