@@ -41,7 +41,7 @@ void Random::nextBytes(::byte *bytes, unsigned int count)
 {
 	for(unsigned int i = 0; i < count; i++ )
 	{
-		bytes[i] = (byte)next(8);
+		bytes[i] = static_cast<unsigned char>(next(8));
 	}
 }
 
