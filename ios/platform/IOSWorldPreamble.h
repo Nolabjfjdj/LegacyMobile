@@ -31,20 +31,28 @@ using __int64 = long long;
 using byte = unsigned char;
 
 namespace ios_port_tls {
-inline std::atomic<DWORD> nextIndex{1};
-inline thread_local std::unordered_map<DWORD, void*> values;
+inline std::atomic<DWORD>& nextIndex() {
+    static std::atomic<DWORD> index{1};
+    return index;
+}
+
+inline std::unordered_map<DWORD, void*>& values() {
+    static thread_local std::unordered_map<DWORD, void*> storage;
+    return storage;
+}
 }
 
 inline DWORD TlsAlloc() {
-    return ios_port_tls::nextIndex.fetch_add(1, std::memory_order_relaxed);
+    return ios_port_tls::nextIndex().fetch_add(1, std::memory_order_relaxed);
 }
 
 inline int TlsSetValue(DWORD index, void* value) {
-    ios_port_tls::values[index] = value;
+    ios_port_tls::values()[index] = value;
     return 1;
 }
 
 inline void* TlsGetValue(DWORD index) {
-    const auto it = ios_port_tls::values.find(index);
-    return it == ios_port_tls::values.end() ? nullptr : it->second;
+    const auto& values = ios_port_tls::values();
+    const auto it = values.find(index);
+    return it == values.end() ? nullptr : it->second;
 }
